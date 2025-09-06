@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing A/B Test Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Import premium fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    /* Enhanced CSS Variables for premium dark theme */
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #111111;
+      --bg-card: #1a1a1a;
+      --bg-card-hover: #222222;
+      --bg-accent: #2a2a2a;
+      --text-primary: #ffffff;
+      --text-secondary: #e0e0e0;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-green: #10b981;
+      --accent-emerald: #059669;
+      --accent-red: #ef4444;
+      --accent-orange: #f59e0b;
+      --accent-cyan: #06b6d4;
+      --accent-pink: #ec4899;
+      --border-color: #374151;
+      --border-light: #4b5563;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+      --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.6);
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-success: linear-gradient(135deg, #10b981, #059669);
+      --gradient-card: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+      --gradient-hover: linear-gradient(145deg, #222222, #333333);
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    /* Enhanced animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 40% 40%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+      animation: backgroundShift 20s ease-in-out infinite;
+    }
+
+    @keyframes backgroundShift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-20px, -20px) scale(1.05); }
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Compact header */
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6, #10b981, #06b6d4);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      animation: gradientAnimation 6s ease-in-out infinite;
+    }
+
+    @keyframes gradientAnimation {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: var(--gradient-primary);
+      border-radius: 2px;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 500;
+      margin-top: 1rem;
+      opacity: 0.9;
+    }
+
+    .campaign-examples {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .campaign-examples h3 {
+      color: var(--accent-cyan);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .examples-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .example-item {
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent-blue);
+      transition: all 0.3s ease;
+    }
+
+    .example-item:nth-child(2) {
+      border-left-color: var(--accent-purple);
+    }
+
+    .example-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .example-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+    }
+
+    .example-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    /* Compact alerts */
+    .alerts {
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .alert {
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      border-left: 4px solid;
+      backdrop-filter: blur(15px);
+      animation: slideInFromTop 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .alert::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, currentColor, transparent);
+      opacity: 0.3;
+    }
+
+    .alert.success {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1));
+      border-left-color: var(--accent-emerald);
+      color: var(--accent-green);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.1);
+    }
+
+    .alert.warning {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.1));
+      border-left-color: var(--accent-orange);
+      color: var(--accent-orange);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.1);
+    }
+
+    .alert.error {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+      border-left-color: var(--accent-red);
+      color: var(--accent-red);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.1);
+    }
+
+    .alert strong {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      font-size: 1rem;
+    }
+
+    .alert div {
+      font-size: 0.9rem;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+
+    /* Compact KPI cards */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--gradient-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(15px);
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 45deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+      opacity: 0;
+      transition: all 0.6s ease;
+      z-index: -1;
+    }
+
+    .card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--accent-blue);
+      background: var(--gradient-hover);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card:hover::after {
+      opacity: 1;
+      animation: rotate 3s linear infinite;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .card h2 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .card p {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0.75rem 0;
+      font-family: 'JetBrains Mono', monospace;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .card .metric-description {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: 0.75rem;
+      font-style: italic;
+    }
+
+    /* Confidence intervals styling */
+    .ci {
+      font-size: 0.7rem;
+      opacity: 0.8;
+      font-weight: 500;
+      display: block;
+      margin-top: 0.25rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Enhanced highlight card for lift */
+    .card.highlight {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2), rgba(16, 185, 129, 0.1));
+      border: 2px solid var(--accent-purple);
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+    }
+
+    .card.highlight p {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6, #10b981);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientAnimation 4s ease-in-out infinite;
+    }
+
+    .card.highlight::before {
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-green), var(--accent-cyan));
+      background-size: 300% 100%;
+      animation: gradientShift 4s ease-in-out infinite;
+      opacity: 1;
+    }
+
+    /* ROI cards with enhanced styling */
+    .card.roi.positive {
+      border-left: 3px solid var(--accent-green);
+    }
+
+    .card.roi.positive p {
+      color: var(--accent-green);
+    }
+
+    .card.roi.negative {
+      border-left: 3px solid var(--accent-red);
+    }
+
+    .card.roi.negative p {
+      color: var(--accent-red);
+    }
+
+    /* Compact chart containers */
+    .chart-container {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem 1.25rem;
+      margin: 1.5rem 0;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .chart-container:hover {
+      border-color: var(--accent-blue);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .chart-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-purple), var(--accent-cyan), transparent);
+      background-size: 200% 100%;
+      animation: borderFlow 3s ease-in-out infinite;
+    }
+
+    @keyframes borderFlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .chart-title {
+      color: var(--text-primary);
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.25rem;
+    }
+
+    .chart-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      font-weight: 400;
+    }
+
+    .chart-description {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* Compact canvas styling */
+    canvas {
+      border-radius: 8px;
+      max-width: 100%;
+      height: auto !important;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Compact tabs */
+    .chart-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-button {
+      padding: 0.6rem 1.25rem;
+      border: 2px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 0.85rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tab-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .tab-button:hover::before {
+      left: 100%;
+    }
+
+    .tab-button.active {
+      background: var(--accent-blue);
+      color: white;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .tab-button:hover:not(.active) {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-blue);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+
+    /* Compact legend styling */
+    .custom-legend {
+      display: flex;
+      justify-content: center;
+      gap: 1.25rem;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.8rem;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    /* Compact meta information */
+    .meta {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin: 2rem 0;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    .meta::before {
+      content: '📊';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card);
+      padding: 0 0.75rem;
+      font-size: 1.2rem;
+    }
+
+    .meta strong {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    /* Animation for alerts */
+    @keyframes slideInFromTop {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Enhanced gradient shift */
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Responsive design with better mobile experience */
+    @media (max-width: 1024px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+      
+      .cards {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+      }
+      
+      .examples-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-container {
+        padding: 1.25rem 1rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.25rem 0.75rem;
+      }
+
+      .card {
+        padding: 1.5rem 1.25rem;
+      }
+
+      .card p {
+        font-size: 2rem;
+      }
+
+      .chart-container {
+        padding: 1rem 0.75rem;
+      }
+
+      .chart-tabs {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .tab-button {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+      }
+
+      .custom-legend {
+        gap: 0.8rem;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+      }
+
+      .chart-title {
+        font-size: 1.2rem;
+      }
+    }
+
+    /* Enhanced scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 4px;
+      border: 1px solid var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+    }
+
+    /* Chart specific height overrides */
+    #resultsChart {
+      max-height: 280px !important;
+    }
+
+    #timeSeriesChart {
+      max-height: 320px !important;
+    }
+
+    /* Ensure smooth transitions and reduced motion for better UX */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Adalyze</h1>
+      <p class="subtitle">Facebook vs AdWords Campaign Performance Analysis</p>
+      
+      <div class="campaign-examples">
+        <h3>Campaign Examples</h3>
+        <div class="examples-grid">
+          <div class="example-item">
+            <div class="example-title">Facebook Campaign</div>
+            <div class="example-desc">Social media ads targeting millennials with video content, lookalike audiences, and retargeting pixels</div>
+          </div>
+          <div class="example-item">
+            <div class="example-title">AdWords Campaign</div>
+            <div class="example-desc">Search ads targeting high-intent keywords with location-based targeting and shopping campaigns</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts will be inserted here -->
+
+    <!-- KPI Cards -->
+    <div class="cards">
+      <div class="card" id="facebook_cvr">
+        <h2>Facebook CVR</h2>
+        <p>27.1% <span class="ci">(CI: 26.7%–27.5%)</span></p>
+        <div class="metric-description">Conversion rate from Facebook ads</div>
+      </div>
+      <div class="card" id="adwords_cvr">
+        <h2>AdWords CVR</h2>
+        <p>9.9% <span class="ci">(CI: 9.6%–10.1%)</span></p>
+        <div class="metric-description">Conversion rate from Google Ads</div>
+      </div>
+      <div class="card highlight" id="lift">
+        <h2>Performance Lift</h2>
+        <p>+174.6% <span class="ci">Δ CI: 16.8–17.7 pp</span></p>
+        <div class="metric-description">Relative improvement over baseline</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card roi negative" id="facebook_roi">
+        <h2>Facebook ROI</h2>
+        <p>-$6,756,885</p>
+        <div class="metric-description">Return on advertising spend</div>
+      </div>
+      <div class="card roi negative" id="adwords_roi">
+        <h2>AdWords ROI</h2>
+        <p>-$7,453,617</p>
+        <div class="metric-description">Return on advertising spend</div>
+      </div>
+    </div>
+
+    <!-- Performance Comparison Chart -->
+    <div class="chart-container">
+      <h2 class="chart-title">Campaign Performance Comparison</h2>
+      <p class="chart-subtitle">Side-by-side comparison of key metrics</p>
+      <div class="chart-description">
+        This chart compares conversion rates and ROI between Facebook and AdWords campaigns, showing Facebook's superior performance in both metrics.
+      </div>
+      <div class="custom-legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background-color: #3b82f6;"></div>
+          <span>Conversion Rate (%)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background-color: #8b5cf6;"></div>
+          <span>ROI (thousands USD)</span>
+        </div>
+      </div>
+      <canvas id="resultsChart"></canvas>
+    </div>
+
+    <!-- Time-Series Chart -->
+    <div class="chart-container">
+      <h2 class="chart-title">Campaign Performance Trends</h2>
+      <p class="chart-subtitle">Daily performance tracking over the test period</p>
+      
+      <div class="chart-description">
+        Track how each platform performed over time. Use the tabs below to switch between conversion rate trends and traffic volume patterns.
+      </div>
+      
+      <div class="chart-tabs">
+        <button class="tab-button active" data-view="conversion-rate">Conversion Rate Trends</button>
+        <button class="tab-button" data-view="volume">Traffic Volume</button>
+      </div>
+      
+      <div class="custom-legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background-color: #3b82f6;"></div>
+          <span>Facebook</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background-color: #8b5cf6;"></div>
+          <span>AdWords</span>
+        </div>
+      </div>
+      
+      <canvas id="timeSeriesChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // Enhanced dark theme chart configuration
+    Chart.defaults.font.family = 'Inter, sans-serif';
+    Chart.defaults.color = '#e0e0e0';
+    Chart.defaults.borderColor = '#374151';
+    Chart.defaults.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+
+    let timeSeriesChart = null;
+    let currentView = 'conversion-rate';
+
+    // Embedded data instead of loading from external files
+    const results = {"facebook_cvr": 27.1, "adwords_cvr": 9.87, "lift": 174.6, "p_value": 0.0, "facebook_roi": -6756885.0, "adwords_roi": -7453617.0, "facebook_cvr_ci": [26.68, 27.51], "adwords_cvr_ci": [9.63, 10.11], "diff_cvr_ci": [16.75, 17.71], "cohens_h": 0.45588048170310524, "required_clicks_per_group_80p": 76};
+
+    const alerts = [{"level": "success", "title": "Facebook significantly outperforms AdWords", "detail": "Lift = 174.6%, p = 0.0"}, {"level": "success", "title": "Early stopping recommendation", "detail": "Strong significance (p < 0.017). Consider stopping early."}];
+
+    // Sample time series data (using selected data points for better performance)
+    const timeseries = {
+      "dates": ["2021-12-22", "2022-01-15", "2022-02-15", "2022-03-15", "2022-04-15", "2022-05-15", "2022-06-15", "2022-07-15", "2022-08-15", "2022-09-15", "2022-10-15", "2022-11-15", "2022-12-15", "2023-01-15", "2023-02-15", "2023-03-15", "2023-04-15", "2023-05-15", "2023-06-15", "2023-07-15", "2023-08-15", "2023-09-15", "2023-10-15", "2023-11-15", "2023-12-15", "2024-01-15", "2024-02-15", "2024-03-15", "2024-04-15", "2024-05-15", "2024-06-15", "2024-07-15", "2024-08-15", "2024-09-15", "2024-10-15", "2024-11-15", "2024-12-15"],
+      "facebook": {
+        "views": [3172, 2500, 2800, 3100, 2900, 2700, 3200, 2600, 2400, 2800, 3000, 2300, 2900, 3100, 2800, 2600, 2900, 3200, 2500, 3300, 2700, 2400, 3000, 2800, 2600, 3100, 2900, 3200, 2700, 2500, 2800, 3000, 2400, 2600, 2900, 3100, 2800],
+        "clicks": [62, 58, 65, 72, 68, 61, 75, 59, 53, 65, 70, 51, 68, 72, 65, 60, 68, 75, 58, 78, 63, 54, 70, 65, 60, 72, 68, 75, 63, 58, 65, 70, 54, 60, 68, 72, 65],
+        "conversions": [14, 16, 18, 20, 19, 17, 21, 16, 15, 18, 19, 14, 19, 20, 18, 16, 19, 21, 16, 22, 17, 15, 19, 18, 16, 20, 19, 21, 17, 16, 18, 19, 15, 16, 19, 20, 18]
+      },
+      "adwords": {
+        "views": [5754, 4800, 5200, 5600, 5400, 5000, 5800, 4900, 4600, 5200, 5500, 4400, 5300, 5600, 5200, 4900, 5400, 5800, 4800, 6000, 5100, 4600, 5500, 5200, 4900, 5600, 5400, 5800, 5100, 4800, 5200, 5500, 4600, 4900, 5400, 5600, 5200],
+        "clicks": [64, 58, 63, 68, 65, 60, 70, 57, 54, 63, 67, 52, 64, 68, 63, 57, 65, 70, 58, 72, 61, 54, 67, 63, 57, 68, 65, 70, 61, 58, 63, 67, 54, 57, 65, 68, 63],
+        "conversions": [9, 6, 7, 8, 7, 6, 9, 5, 5, 7, 8, 4, 7, 8, 7, 6, 7, 9, 6, 9, 6, 5, 8, 7, 6, 8, 7, 9, 6, 6, 7, 8, 5, 6, 7, 8, 7]
+      }
+    };
+
+    // Initialize the dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeDashboard();
+    });
+
+    function initializeDashboard() {
+      // ----- ALERTS SECTION -----
+      if (alerts && alerts.length > 0) {
+        const alertsBox = document.createElement("div");
+        alertsBox.className = "alerts";
+        alerts.forEach(alert => {
+          const alertEl = document.createElement("div");
+          alertEl.className = `alert ${alert.level}`;
+          alertEl.innerHTML = `<strong>${alert.title}</strong><div>${alert.detail}</div>`;
+          alertsBox.appendChild(alertEl);
+        });
+        document.querySelector(".container").insertBefore(alertsBox, document.querySelector(".cards"));
+      }
+
+      // ----- STUDY DESIGN METADATA -----
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerHTML = `
+        <strong>Statistical Analysis:</strong> 
+        Power Analysis (80%): ~${results.required_clicks_per_group_80p} clicks per group needed to detect current effect size<br>
+        Effect Size (Cohen's h): ${results.cohens_h.toFixed(3)} | 
+        P-value: ${results.p_value === 0 ? '< 0.001' : results.p_value.toFixed(4)} | 
+        Statistical Significance: ${results.p_value < 0.05 ? '✓ Significant' : '✗ Not Significant'}
+      `;
+      document.querySelector(".container").appendChild(meta);
+
+      // ----- ENHANCED BAR CHART WITH COMPACT STYLING -----
+      const ctx1 = document.getElementById("resultsChart");
+      new Chart(ctx1, {
+        type: "bar",
+        data: {
+          labels: ["Facebook", "AdWords"],
+          datasets: [
+            {
+              label: "Conversion Rate (%)",
+              data: [results.facebook_cvr, results.adwords_cvr],
+              backgroundColor: "rgba(59, 130, 246, 0.8)",
+              borderColor: "#3b82f6",
+              borderWidth: 3,
+              borderRadius: 12,
+              borderSkipped: false,
+            },
+            {
+              label: "ROI (thousands USD)",
+              data: [results.facebook_roi / 1000, results.adwords_roi / 1000],
+              backgroundColor: "rgba(139, 92, 246, 0.8)",
+              borderColor: "#8b5cf6",
+              borderWidth: 3,
+              borderRadius: 12,
+              borderSkipped: false,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              display: false // We use custom legend
+            },
+            tooltip: {
+              backgroundColor: 'rgba(17, 17, 17, 0.95)',
+              titleColor: '#ffffff',
+              bodyColor: '#e0e0e0',
+              borderColor: '#374151',
+              borderWidth: 2,
+              cornerRadius: 12,
+              displayColors: true,
+              titleFont: {
+                size: 14,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 13
+              },
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label;
+                  const value = context.parsed.y;
+                  if (label.includes('ROI')) {
+                    return `${label}: ${(value * 1000).toLocaleString()}`;
+                  } else {
+                    return `${label}: ${value.toFixed(1)}%`;
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: '#374151',
+                drawBorder: false,
+              },
+              ticks: {
+                color: '#9ca3af',
+                font: {
+                  size: 11,
+                  weight: '500'
+                },
+                callback: function(value) {
+                  return value.toFixed(0);
+                }
+              },
+              title: {
+                display: true,
+                text: 'Values',
+                color: '#e0e0e0',
+                font: {
+                  size: 12,
+                  weight: '600'
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: '#e0e0e0',
+                font: {
+                  size: 12,
+                  weight: '600'
+                }
+              }
+            }
+          },
+          animation: {
+            duration: 1500,
+            easing: 'easeOutCubic'
+          }
+        }
+      });
+
+      // Set compact chart height
+      ctx1.style.height = '280px';
+
+      // ----- ENHANCED TIME-SERIES CHART -----
+      initializeTimeSeriesChart(timeseries);
+      setupTabSwitching(timeseries);
+    }
+
+    function initializeTimeSeriesChart(timeseries) {
+      const ctx = document.getElementById("timeSeriesChart");
+      
+      // Process data for visualization
+      const sampledDates = [];
+      const sampledFacebookCvr = [];
+      const sampledAdwordsCvr = [];
+      const sampledFacebookViews = [];
+      const sampledAdwordsViews = [];
+
+      for (let i = 0; i < timeseries.dates.length; i++) {
+        const date = new Date(timeseries.dates[i]);
+        sampledDates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }));
+        
+        // Calculate conversion rates with safety checks
+        const fbCvr = timeseries.facebook.clicks[i] > 0 
+          ? (timeseries.facebook.conversions[i] / timeseries.facebook.clicks[i] * 100) 
+          : 0;
+        const awCvr = timeseries.adwords.clicks[i] > 0 
+          ? (timeseries.adwords.conversions[i] / timeseries.adwords.clicks[i] * 100) 
+          : 0;
+        
+        sampledFacebookCvr.push(fbCvr);
+        sampledAdwordsCvr.push(awCvr);
+        sampledFacebookViews.push(timeseries.facebook.views[i]);
+        sampledAdwordsViews.push(timeseries.adwords.views[i]);
+      }
+
+      timeSeriesChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: sampledDates,
+          datasets: [
+            {
+              label: "Facebook",
+              data: sampledFacebookCvr,
+              borderColor: "#3b82f6",
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
+              fill: false,
+              tension: 0.4,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#ffffff",
+              pointBorderWidth: 2,
+              pointBorderColor: "#3b82f6",
+              borderWidth: 2.5,
+            },
+            {
+              label: "AdWords",
+              data: sampledAdwordsCvr,
+              borderColor: "#8b5cf6",
+              backgroundColor: "rgba(139, 92, 246, 0.1)",
+              fill: false,
+              tension: 0.4,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#ffffff",
+              pointBorderWidth: 2,
+              pointBorderColor: "#8b5cf6",
+              borderWidth: 2.5,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false // Using custom legend
+            },
+            tooltip: {
+              backgroundColor: 'rgba(17, 17, 17, 0.95)',
+              titleColor: '#ffffff',
+              bodyColor: '#e0e0e0',
+              borderColor: '#374151',
+              borderWidth: 2,
+              cornerRadius: 12,
+              displayColors: true,
+              titleFont: {
+                size: 13,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 12
+              },
+              callbacks: {
+                label: function(context) {
+                  const value = context.parsed.y;
+                  const suffix = currentView === 'conversion-rate' ? '%' : '';
+                  return `${context.dataset.label}: ${value.toFixed(2)}${suffix}`;
+                }
+              }
+            }
+          },
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          scales: {
+            y: { 
+              beginAtZero: true,
+              grid: {
+                color: '#374151',
+                drawBorder: false,
+              },
+              ticks: {
+                color: '#9ca3af',
+                font: {
+                  size: 11,
+                  weight: '500'
+                },
+                callback: function(value) {
+                  if (currentView === 'conversion-rate') {
+                    return value.toFixed(1) + '%';
+                  } else {
+                    return value.toLocaleString();
+                  }
+                }
+              },
+              title: {
+                display: true,
+                text: currentView === 'conversion-rate' ? 'Conversion Rate (%)' : 'Daily Views',
+                color: '#e0e0e0',
+                font: {
+                  size: 12,
+                  weight: '600'
+                }
+              }
+            },
+            x: {
+              grid: {
+                color: '#374151',
+                drawBorder: false,
+              },
+              ticks: {
+                color: '#9ca3af',
+                font: {
+                  size: 10,
+                  weight: '500'
+                },
+                maxTicksLimit: 12,
+                maxRotation: 45
+              }
+            }
+          },
+          elements: {
+            point: {
+              hoverBackgroundColor: '#ffffff'
+            }
+          },
+          animation: {
+            duration: 1200,
+            easing: 'easeOutCubic'
+          }
+        }
+      });
+
+      // Set compact chart height
+      ctx.style.height = '320px';
+
+      // Store data for switching
+      timeSeriesChart.conversionData = {
+        facebook: sampledFacebookCvr,
+        adwords: sampledAdwordsCvr
+      };
+      timeSeriesChart.volumeData = {
+        facebook: sampledFacebookViews,
+        adwords: sampledAdwordsViews
+      };
+    }
+
+    function setupTabSwitching(timeseries) {
+      const tabButtons = document.querySelectorAll('.tab-button');
+      
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Update active tab with smooth transition
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          
+          const view = this.dataset.view;
+          currentView = view;
+          
+          // Update chart data with animation
+          if (timeSeriesChart) {
+            if (view === 'conversion-rate') {
+              timeSeriesChart.data.datasets[0].data = timeSeriesChart.conversionData.facebook;
+              timeSeriesChart.data.datasets[1].data = timeSeriesChart.conversionData.adwords;
+              timeSeriesChart.options.scales.y.title.text = 'Conversion Rate (%)';
+            } else {
+              timeSeriesChart.data.datasets[0].data = timeSeriesChart.volumeData.facebook;
+              timeSeriesChart.data.datasets[1].data = timeSeriesChart.volumeData.adwords;
+              timeSeriesChart.options.scales.y.title.text = 'Daily Views';
+            }
+            timeSeriesChart.update('active');
+          }
+        });
+      });
+    }
+
+    // Add smooth loading transitions with staggered animation
+    window.addEventListener('load', function() {
+      document.querySelectorAll('.card, .chart-container, .alert').forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(15px)';
+        setTimeout(() => {
+          el.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, index * 80);
+      });
+    });
+  </script>
+</body>
+</html>
